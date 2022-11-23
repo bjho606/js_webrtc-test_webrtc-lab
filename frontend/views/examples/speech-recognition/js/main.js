@@ -4,12 +4,29 @@
  * @author dodortus (codejs.co.kr / dodortus@gmail.com)
  *
  */
+
+// const { app } = require("express");
+// import {io} from "socket.io-client";
+// io = require('socket.io');
+
 $(function () {
+  const socket = io();
+  // console.log(socket);
+  
+  socket.on("connection", (msg) => {
+    console.log(msg);
+  });
+  
+  socket.on("test", (msg) => {
+    console.log(msg);
+  });
+  
+  
   if (typeof webkitSpeechRecognition !== 'function') {
     alert('크롬에서만 동작 합니다.');
     return false;
   }
-
+  
   const FIRST_CHAR = /\S/;
   const TWO_LINE = /\n\n/g;
   const ONE_LINE = /\n/g;
@@ -20,10 +37,12 @@ $(function () {
   const $btnMic = document.querySelector('#btn-mic');
   const $resultWrap = document.querySelector('#result');
   const $iconMusic = document.querySelector('#icon-music');
+  const $textSummaryResult = document.querySelector('#summary-result');
 
   let isRecognizing = false;
   let ignoreEndProcess = false;
   let finalTranscript = '';
+  let textSummaryScript = '';
 
   recognition.continuous = true;
   recognition.interimResults = true;
@@ -73,9 +92,9 @@ $(function () {
       const transcript = event.results[i][0].transcript;
 
       if (event.results[i].isFinal) {
-        finalTranscript += transcript;
+        finalTranscript += transcript + '.';
       } else {
-        interimTranscript += transcript;
+        interimTranscript += transcript + '.';
       }
     }
 
@@ -198,10 +217,23 @@ $(function () {
   }
 
   /**
+   * 회의 내용 요약
+   */
+  function textSummarize(text) {
+    socket.emit("stt_data", text);
+
+    socket.on("result", (result) => {
+      console.log(result);
+      $textSummaryResult.innerText = result;
+    })
+  }
+
+  /**
    * 초기 바인딩
    */
   function initialize() {
     const $btnTTS = document.querySelector('#btn-tts');
+    const $btnSummary = document.querySelector('#btn-summary');
     const defaultMsg = '전 음성 인식된 글자를 읽습니다.';
 
     $btnTTS.addEventListener('click', () => {
@@ -210,6 +242,12 @@ $(function () {
     });
 
     $btnMic.addEventListener('click', start);
+
+    $btnSummary.addEventListener('click', () => {
+      console.log('start summary');
+      const text = final_span.innerText || defaultMsg;
+      textSummarize(text);
+    });
   }
 
   initialize();

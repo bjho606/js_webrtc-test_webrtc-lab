@@ -40,7 +40,7 @@ module.exports = [
     renderFile: 'examples/data-channel/index.ejs',
   },
   {
-    title: '음성 인식',
+    title: '음성 인식, stt, 내용 요약',
     url: '/speech-recognition',
     renderFile: 'examples/speech-recognition/index.ejs',
   },
